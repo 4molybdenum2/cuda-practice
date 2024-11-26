@@ -78,6 +78,7 @@ void mandelbrot_cpu_vector(uint32_t img_size, uint32_t max_iters, uint32_t *out)
             __m512 w_avx = _mm512_set1_ps(0.0f);
             __m512i iters_avx = _mm512_setzero_si512();
             
+            // recursive loop for fractal
             for(uint32_t iter = 0; iter < max_iters && mask != 0; ++iter ) {
                 // check condition
                 auto x_avx = _mm512_add_ps(_mm512_sub_ps(x2_avx, y2_avx), cx_avx);
@@ -96,7 +97,7 @@ void mandelbrot_cpu_vector(uint32_t img_size, uint32_t max_iters, uint32_t *out)
                     mask,
                     iters_avx,
                     _mm512_set1_epi32(1)
-                );
+                ); // accumulator
 
 
             }
