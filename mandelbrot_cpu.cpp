@@ -77,19 +77,21 @@ void mandelbrot_cpu_vector(uint32_t img_size, uint32_t max_iters, uint32_t *out)
             __m512 y2_avx = _mm512_set1_ps(0.0f);
             __m512 w_avx = _mm512_set1_ps(0.0f);
             __m512i iters_avx = _mm512_setzero_si512();
-            
+
             // recursive loop for fractal
             for(uint32_t iter = 0; iter < max_iters && mask != 0; ++iter ) {
                 // check condition
-                auto x_avx = _mm512_add_ps(_mm512_sub_ps(x2_avx, y2_avx), cx_avx);
-                auto y_avx = _mm512_add_ps(_mm512_sub_ps(_mm512_sub_ps(w_avx, x2_avx), y2_avx), cy_avx);
+                
+                __m512 tmp_x2_plus_y2 = _mm512_add_ps(x2_avx,y2_avx);
+                __m512 x_avx = _mm512_add_ps(_mm512_sub_ps(x2_avx, y2_avx), cx_avx);
+                __m512 y_avx = _mm512_add_ps(_mm512_sub_ps(w_avx, tmp_x2_plus_y2), cy_avx);
                 x2_avx = _mm512_mul_ps(x_avx,x_avx);
                 y2_avx = _mm512_mul_ps(y_avx,y_avx);
-                auto z_avx = _mm512_add_ps(x_avx , y_avx);
+                __m512 z_avx = _mm512_add_ps(x_avx , y_avx);
                 w_avx = _mm512_mul_ps(z_avx, z_avx);
 
                 
-                __mmask16 curr_mask = _mm512_cmple_ps_mask(_mm512_add_ps(x2_avx , y2_avx), v_4_0);
+                __mmask16 curr_mask = _mm512_cmple_ps_mask(tmp_x2_plus_y2, v_4_0);
                 mask = _kand_mask16(mask, curr_mask);
                 
                 iters_avx = _mm512_mask_add_epi32(
